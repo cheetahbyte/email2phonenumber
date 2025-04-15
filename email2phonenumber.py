@@ -535,7 +535,6 @@ def start_scrapping(email, quiet_mode):
     if quiet_mode:
         scrape_paypal(email)
     else:
-        #scrape_ebay(email)
         scrape_last_pass(email)
         scrape_paypal(email)
 
@@ -608,88 +607,6 @@ def scrape_last_pass(email):
                 GREEN, str(len(regex_output.group(2).replace("-", ""))), ENDC)
     else:
         logger.info("%sLastpass did not report any digits %s", YELLOW, ENDC)
-
-
-def scrape_ebay(email):
-    """
-    Scrapes ebay
-    :param email: Email to use to scrape ebay
-    :return:
-    """
-    global userAgents
-    global proxyList
-    logger.info("Scraping Ebay...")
-    user_agent = random.choice(userAgents)
-    proxy = random.choice(proxyList) if proxyList else None
-    session = requests.Session()
-    response = session.get(
-        "https://fyp.ebay.com/EnterUserInfo?ru=https%3A%2F%2Fwww.ebay.com%2F&gchru=&clientapptype=19&rmvhdr=false",
-        headers={
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": user_agent,
-            "Accept":
-                "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-        proxies=proxy,
-        verify=verifyProxy
-    )
-    regex_input = ""
-    regex_output = re.search(r'value="(\w{60,})"', response.text)
-    if regex_output and regex_output.group(1):
-        regex_input = regex_output.group(1)
-    else:
-        logger.info("%sEbay did not report any digits %s", YELLOW, ENDC)
-        return
-
-    response = session.post(
-        "https://fyp.ebay.com/EnterUserInfo?ru=https%3A%2F%2Fwww.ebay.com%2F&gchru=&clientapptype=19&rmvhdr=false",
-        headers={
-            "Cache-Control": "max-age=0",
-            "Origin": "https://fyp.ebay.com",
-            "Upgrade-Insecure-Requests": "1",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": user_agent,
-            "Accept":
-            "text/html,application/xhtml+xml,application/xml;q=0.9,"
-            "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-            "Referer":
-            "https://fyp.ebay.com/EnterUserInfo?ru=https%3A%2F%2Fwww.ebay.com%2F&clientapptype=19&signInUrl="
-            "https%3A%2F%2Fwww.ebay.com%2Fsignin%3Ffyp%3Dsgn%26siteid%3D0%26co_partnerId%3D0%26ru%3Dhttps%25"
-                            "3A%252F%252Fwww.ebay.com%252F&otpFyp=1",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-        data="ru=https%253A%252F%252Fwww.ebay.com%252F"
-        + "&showSignInOTP="
-        + "&signInUrl="
-        + "&clientapptype=19"
-        + "&reqinput=" + regex_input
-        + "&rmvhdr=false"
-        + "&gchru=&__HPAB_token_text__="
-        + "&__HPAB_token_string__="
-        + "&pageType="
-        + "&input=" + email,
-        proxies=proxy,
-        verify=verifyProxy)
-    first_digit = ""
-    last_two_digits = ""
-    regex_output = re.search(
-        "text you at ([0-9]{1})xx-xxx-xx([0-9]{2})", response.text)
-    if regex_output:
-        if regex_output.group(1):
-            first_digit = regex_output.group(1)
-            logger.info("%sEbay reports that the first digit is: %s %s",
-                        GREEN, first_digit, ENDC)
-        if regex_output.group(2):
-            last_two_digits = regex_output.group(2)
-            logger.info("%sEbay reports that the last 2 digits are: %s %s",
-                        GREEN, last_two_digits, ENDC)
-    else:
-        logger.info("%sEbay did not report any digits %s", YELLOW, ENDC)
-
 
 def scrape_paypal(email):
     """
