@@ -535,7 +535,7 @@ def start_scrapping(email, quiet_mode):
     if quiet_mode:
         scrape_paypal(email)
     else:
-        scrape_ebay(email)
+        #scrape_ebay(email)
         scrape_last_pass(email)
         scrape_paypal(email)
 
